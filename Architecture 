@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LFC Content Generator — Architecture Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --purple: #8B2A7A; --purple-light: #F5EAF3;
+  --orange: #F5A623; --orange-light: #FEF6E6;
+  --green: #3D9140;  --green-light: #EDF7E8;
+  --blue: #0077B5;   --blue-light: #EFF6FF;
+  --red: #E1306C;    --red-light: #FFF0F8;
+  --ink: #1A1A1A; --muted: #7A6B78; --border: #E8E4EC; --bg: #FAFAF8;
+  --font-h: 'Poppins', sans-serif; --font-b: 'Nunito', sans-serif;
+}
+body { font-family: var(--font-b); background: var(--bg); color: var(--ink); padding: 32px 20px 60px; }
+h1 { font-family: var(--font-h); font-size: 28px; font-weight: 800; color: var(--purple); text-align: center; margin-bottom: 6px; }
+.desc { text-align: center; color: var(--muted); font-size: 14px; font-weight: 600; margin-bottom: 40px; }
+
+.diagram { max-width: 900px; margin: 0 auto; }
+
+/* LAYERS */
+.layer { display: flex; align-items: stretch; gap: 0; margin-bottom: 0; }
+.layer-label {
+  width: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 16px;
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
+}
+.layer-content { flex: 1; }
+
+/* NODE */
+.node {
+  border-radius: 16px; padding: 18px 22px; border: 2px solid;
+  position: relative;
+}
+.node.user-node   { background: var(--purple-light); border-color: #D4A8CC; }
+.node.pages-node  { background: var(--orange-light);  border-color: #F5D087; }
+.node.worker-node { background: var(--blue-light);    border-color: #B0D4EC; }
+.node.mistral-node{ background: var(--green-light);   border-color: #B8DEBA; }
+.node.output-node { background: var(--red-light);     border-color: #F0B0CC; }
+
+.node-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.node-icon { font-size: 28px; }
+.node-title { font-family: var(--font-h); font-size: 17px; font-weight: 800; color: var(--ink); }
+.node-url   { font-size: 11px; font-weight: 700; color: var(--muted); margin-top: 1px; }
+
+.node-body { display: flex; gap: 10px; flex-wrap: wrap; }
+.node-fact {
+  background: rgba(255,255,255,0.7); border-radius: 8px; padding: 7px 12px;
+  font-size: 12px; font-weight: 600; color: var(--ink);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.node-fact strong { display: block; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 2px; }
+
+/* ARROW */
+.arrow-row { display: flex; align-items: center; gap: 0; margin: 0; }
+.arrow-spacer { width: 100px; flex-shrink: 0; }
+.arrow-body {
+  flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 0;
+}
+.arrow-line {
+  flex: 1; height: 2px; background: var(--border); position: relative;
+}
+.arrow-line::after {
+  content: ''; position: absolute; right: -1px; top: -5px;
+  border: 6px solid transparent; border-left-color: var(--border);
+}
+.arrow-label {
+  background: #fff; border: 1.5px solid var(--border); border-radius: 20px;
+  padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--muted);
+  white-space: nowrap; flex-shrink: 0;
+}
+.arrow-sublabel { font-size: 10px; color: var(--muted); font-weight: 600; text-align: center; }
+
+/* CODE BLOCK */
+.code-section { max-width: 900px; margin: 40px auto 0; }
+.code-section h2 { font-family: var(--font-h); font-size: 20px; font-weight: 800; color: var(--purple); margin-bottom: 16px; }
+.code-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.code-card { background: #1E1E2E; border-radius: 14px; padding: 18px; overflow: hidden; }
+.code-card .cc-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 10px; }
+.code-card pre { font-size: 12px; color: #CDD6F4; line-height: 1.6; white-space: pre-wrap; word-break: break-word; font-family: 'Courier New', monospace; }
+.code-card .kw  { color: #CBA6F7; }
+.code-card .str { color: #A6E3A1; }
+.code-card .fn  { color: #89B4FA; }
+.code-card .cmt { color: #585B70; }
+
+/* LEGEND */
+.legend { max-width: 900px; margin: 32px auto 0; display: flex; gap: 12px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<h1>LFC Content Generator — Architecture</h1>
+<p class="desc">How the tool is structured: from browser to AI and back again.</p>
+
+<div class="diagram">
+
+  <!-- USER -->
+  <div class="layer">
+    <div class="layer-label">User</div>
+    <div class="layer-content">
+      <div class="node user-node">
+        <div class="node-header">
+          <div class="node-icon">🧑‍💻</div>
+          <div><div class="node-title">Browser (Any device)</div><div class="node-url">Chrome · Safari · Firefox · Mobile</div></div>
+        </div>
+        <div class="node-body">
+          <div class="node-fact"><strong>Input</strong>Topic, context, platform chips, tone chip</div>
+          <div class="node-fact"><strong>Action</strong>Clicks "Generate Content for LFC"</div>
+          <div class="node-fact"><strong>Output</strong>Sees tabbed carousel with platform content</div>
+          <div class="node-fact"><strong>Copy</strong>Reads from window._lfcItems[] — no re-parse</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 1 -->
+  <div class="arrow-row">
+    <div class="arrow-spacer"></div>
+    <div class="arrow-body">
+      <div class="arrow-label">① HTTPS POST — fetch() to Worker URL</div>
+      <div class="arrow-line"></div>
+    </div>
+  </div>
+
+  <!-- GITHUB PAGES -->
+  <div class="layer">
+    <div class="layer-label">Frontend</div>
+    <div class="layer-content">
+      <div class="node pages-node">
+        <div class="node-header">
+          <div class="node-icon">📄</div>
+          <div><div class="node-title">GitHub Pages</div><div class="node-url">index.html · script.js · Hosted free</div></div>
+        </div>
+        <div class="node-body">
+          <div class="node-fact"><strong>index.html</strong>UI, CSS, progress logic, chip interactions</div>
+          <div class="node-fact"><strong>script.js</strong>generate(), renderCarousel(), copy helpers</div>
+          <div class="node-fact"><strong>Fonts</strong>Baloo 2 + Nunito via Google Fonts CDN</div>
+          <div class="node-fact"><strong>Cost</strong>₹0 / month · No build step · No framework</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 2 -->
+  <div class="arrow-row">
+    <div class="arrow-spacer"></div>
+    <div class="arrow-body">
+      <div class="arrow-label">② JSON body: {model, messages[], temperature}</div>
+      <div class="arrow-line"></div>
+    </div>
+  </div>
+
+  <!-- CLOUDFLARE WORKER -->
+  <div class="layer">
+    <div class="layer-label">Proxy</div>
+    <div class="layer-content">
+      <div class="node worker-node">
+        <div class="node-header">
+          <div class="node-icon">🔒</div>
+          <div><div class="node-title">Cloudflare Worker</div><div class="node-url">lfc-content.sukriti7936.workers.dev</div></div>
+        </div>
+        <div class="node-body">
+          <div class="node-fact"><strong>Role</strong>Secure API proxy — browser never sees the key</div>
+          <div class="node-fact"><strong>CORS</strong>Adds Access-Control headers for browser</div>
+          <div class="node-fact"><strong>Auth</strong>Injects Authorization: Bearer [MISTRAL_KEY]</div>
+          <div class="node-fact"><strong>Limit</strong>100,000 free requests / day</div>
+          <div class="node-fact"><strong>Cost</strong>₹0 / month</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 3 -->
+  <div class="arrow-row">
+    <div class="arrow-spacer"></div>
+    <div class="arrow-body">
+      <div class="arrow-label">③ Authenticated call → api.mistral.ai/v1/chat/completions</div>
+      <div class="arrow-line"></div>
+    </div>
+  </div>
+
+  <!-- MISTRAL AI -->
+  <div class="layer">
+    <div class="layer-label">AI Model</div>
+    <div class="layer-content">
+      <div class="node mistral-node">
+        <div class="node-header">
+          <div class="node-icon">🤖</div>
+          <div><div class="node-title">Mistral AI — mistral-small-latest</div><div class="node-url">api.mistral.ai · temperature: 0.8 · max_tokens: 2500</div></div>
+        </div>
+        <div class="node-body">
+          <div class="node-fact"><strong>System prompt</strong>"Return ONLY valid JSON array. No markdown."</div>
+          <div class="node-fact"><strong>User prompt</strong>LFC brand + platform rules + topic + tone</div>
+          <div class="node-fact"><strong>Output</strong>JSON array: [{platform, headlines[], caption, cta, keywords[], hashtags[], engagement[]}]</div>
+          <div class="node-fact"><strong>Cost</strong>Free tier available</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARROW 4 -->
+  <div class="arrow-row">
+    <div class="arrow-spacer"></div>
+    <div class="arrow-body">
+      <div class="arrow-label">④ JSON array response → renderCarousel(parsed)</div>
+      <div class="arrow-line"></div>
+    </div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="layer">
+    <div class="layer-label">Output</div>
+    <div class="layer-content">
+      <div class="node output-node">
+        <div class="node-header">
+          <div class="node-icon">✨</div>
+          <div><div class="node-title">Generated Content — Tabbed Carousel</div><div class="node-url">Per platform: Facebook · Instagram · LinkedIn · Twitter/X</div></div>
+        </div>
+        <div class="node-body">
+          <div class="node-fact"><strong>Headlines</strong>5 options — pick your favourite</div>
+          <div class="node-fact"><strong>Caption</strong>Hook → Story → CTA</div>
+          <div class="node-fact"><strong>CTA</strong>Platform-specific action line</div>
+          <div class="node-fact"><strong>Hashtags</strong>10–12 platform-relevant tags</div>
+          <div class="node-fact"><strong>Keywords</strong>6 SEO keywords</div>
+          <div class="node-fact"><strong>Engagement</strong>2 poll / comment ideas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CODE SNIPPETS -->
+<div class="code-section">
+  <h2>Key Code Snippets</h2>
+  <div class="code-grid">
+    <div class="code-card">
+      <div class="cc-title">script.js — fetch to Worker</div>
+      <pre><span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(
+  <span class="str">"https://lfc-content.sukriti7936
+    .workers.dev/"</span>, {
+  method: <span class="str">"POST"</span>,
+  headers: {
+    <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>
+  },
+  body: <span class="fn">JSON.stringify</span>({
+    model: <span class="str">"mistral-small-latest"</span>,
+    messages: [
+      { role: <span class="str">"system"</span>, content: <span class="str">"..."</span> },
+      { role: <span class="str">"user"</span>,   content: prompt }
+    ],
+    temperature: <span class="str">0.8</span>,
+    max_tokens: <span class="str">2500</span>
+  })
+});</pre>
+    </div>
+    <div class="code-card">
+      <div class="cc-title">script.js — Safe copy (no JSON in attrs)</div>
+      <pre><span class="cmt">// Store items in JS — never in onclick attrs</span>
+window._lfcItems = {};
+items.<span class="fn">forEach</span>((item, i) => {
+  window._lfcItems[i] = item;
+});
+
+<span class="cmt">// Each slide gets a data-idx attribute</span>
+<span class="kw">function</span> <span class="fn">getItemForBtn</span>(btn) {
+  <span class="kw">const</span> slide = btn.<span class="fn">closest</span>(
+    <span class="str">'.carousel-slide'</span>
+  );
+  <span class="kw">const</span> idx = <span class="fn">parseInt</span>(
+    slide.dataset.idx, <span class="str">10</span>
+  );
+  <span class="kw">return</span> window._lfcItems[idx];
+}</pre>
+    </div>
+    <div class="code-card">
+      <div class="cc-title">Cloudflare Worker — proxy logic</div>
+      <pre><span class="fn">addEventListener</span>(<span class="str">'fetch'</span>, event => {
+  event.<span class="fn">respondWith</span>(<span class="fn">handleRequest</span>(
+    event.request
+  ));
+});
+
+<span class="kw">async function</span> <span class="fn">handleRequest</span>(req) {
+  <span class="kw">const</span> body = <span class="kw">await</span> req.<span class="fn">json</span>();
+  <span class="kw">return</span> <span class="fn">fetch</span>(MISTRAL_URL, {
+    method: <span class="str">"POST"</span>,
+    headers: {
+      <span class="str">"Authorization"</span>:
+        <span class="str">`Bearer ${MISTRAL_API_KEY}`</span>,
+      <span class="str">"Content-Type"</span>:
+        <span class="str">"application/json"</span>
+    },
+    body: <span class="fn">JSON.stringify</span>(body)
+  });
+}</pre>
+    </div>
+    <div class="code-card">
+      <div class="cc-title">Progress tracker — live step detection</div>
+      <pre><span class="kw">function</span> <span class="fn">updateProgress</span>() {
+  <span class="kw">const</span> hasTopic = topicInput
+    .value.<span class="fn">trim</span>().length > <span class="str">0</span>;
+  <span class="kw">const</span> hasStep3 =
+    hasPlatform || hasTone;
+
+  <span class="cmt">// Steps turn green independently</span>
+  <span class="fn">setStep</span>(<span class="str">'step1'</span>,
+    hasTopic ? <span class="str">'done'</span> : <span class="str">'active'</span>);
+  <span class="fn">setStep</span>(<span class="str">'step3'</span>,
+    hasStep3 ? <span class="str">'done'</span> : <span class="str">'inactive'</span>);
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#D4A8CC"></div>User / Browser layer</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F5D087"></div>Frontend hosting (GitHub Pages)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#B0D4EC"></div>Proxy layer (Cloudflare Worker)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#B8DEBA"></div>AI model (Mistral)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F0B0CC"></div>Generated output</div>
+</div>
+
+</body>
+</html>
